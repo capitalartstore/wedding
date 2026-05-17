@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulir RSVP & Riwayat Ucapan Google Sheets (Responsive)</title>
+    <style>
+        body {
+            font-family: 'Georgia', serif;
+            background-color: #f4eae1;
+            /* Latar belakang halaman pastel lembut */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+
+        .form-container,
+        .history-container {
+            background-color: #e3cca1;
+            /* Warna latar belakang form & riwayat pastel hangat */
+            width: 100%;
+            max-width: 480px;
+            padding: 35px 25px;
+            border-radius: 8px;
+            box-sizing: border-box;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        label,
+        .history-title {
+            display: block;
+            font-size: 15px;
+            color: #4a3e3d;
+            /* Warna teks label cokelat gelap lembut */
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .history-title {
+            font-size: 18px;
+            border-bottom: 2px solid #d1b88c;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 14px;
+            background-color: #fcf9f2;
+            /* Warna kolom input putih tulang */
+            border: none;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 15px;
+            color: #333;
+            font-family: inherit;
+        }
+
+        input[type="text"]::placeholder,
+        textarea::placeholder {
+            color: #a0958a;
+        }
+
+        textarea {
+            resize: vertical;
+            height: 120px;
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg fill='%234a3e3d' height='24' viewBox='0 0 24 24' width='24' xmlns='http://w3.org'><path d='M7 10l5 5 5-5z'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 18px;
+            padding-right: 30px;
+        }
+
+        .btn-container {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        button {
+            background-color: #8da399;
+            /* Tombol hijau sage pastel */
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            font-size: 16px;
+            font-family: inherit;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: #768c82;
+        }
+
+        button:disabled {
+            background-color: #bcccb6;
+            cursor: not-allowed;
+        }
+
+        /* Gaya untuk Riwayat Ucapan */
+        .history-list {
+            max-height: 350px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .history-list::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .history-list::-webkit-scrollbar-thumb {
+            background-color: #c4b08b;
+            border-radius: 4px;
+        }
+
+        .comment-item {
+            background-color: #fcf9f2;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .comment-name {
+            font-weight: bold;
+            font-size: 14px;
+            color: #4a3e3d;
+        }
+
+        .comment-status {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .status-hadir {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .status-tidak_hadir {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+
+        .comment-text {
+            font-size: 13px;
+            color: #555;
+            line-height: 1.4;
+            margin: 0;
+            white-space: pre-line;
+        }
+
+        .no-comment {
+            text-align: center;
+            color: #7c6d62;
+            font-size: 14px;
+            font-style: italic;
+            padding: 20px 0;
+        }
+
+        /* --- PENYESUAIAN KHUSUS UNTUK HP (BREAKPOINT MOBILE) --- */
+        @media screen and (max-width: 480px) {
+            body {
+                padding: 20px 12px;
+                /* Mengurangi jarak margin luar di layar HP */
+            }
+
+            .form-container,
+            .history-container {
+                padding: 25px 15px;
+                /* Memperkecil padding dalam kotak agar ruang input lebih luas */
+                margin-bottom: 20px;
+            }
+
+            label {
+                font-size: 14px;
+                /* Mengecilkan teks label */
+                margin-bottom: 6px;
+            }
+
+            .history-title {
+                font-size: 16px;
+                /* Mengecilkan judul riwayat */
+            }
+
+            input[type="text"],
+            textarea,
+            select {
+                padding: 12px;
+                /* Memperkecil tinggi kolom input agar tidak terlalu tebal di HP */
+                font-size: 14px;
+                /* Ukuran teks input yang ideal untuk layar HP */
+            }
+
+            textarea {
+                height: 100px;
+                /* Mengurangi tinggi kolom ucapan di layar HP */
+            }
+
+            button {
+                width: 100%;
+                /* Mengubah tombol menjadi lebar penuh (full-width) agar lebih mudah ditekan jempol */
+                padding: 12px;
+                font-size: 15px;
+            }
+
+            .comment-name {
+                font-size: 13px;
+            }
+
+            .comment-text {
+                font-size: 12px;
+            }
+
+            .comment-status {
+                font-size: 10px;
+                padding: 1px 6px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="form-container">
+        <form id="rsvpForm">
+            <div class="form-group">
+                <label for="nama">Nama</label>
+                <input type="text" id="nama" name="Nama" placeholder="Contoh: Bapak Budi" required>
+            </div>
+
+            <div class="form-group">
+                <label for="ucapan">Ucapan</label>
+                <textarea id="ucapan" name="Ucapan" placeholder="Tulis ucapan Anda di sini..." required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="kehadiran">Kehadiran</label>
+                <select id="kehadiran" name="Kehadiran" required>
+                    <option value="" disabled selected hidden>Option</option>
+                    <option value="Hadir">Hadir</option>
+                    <option value="Tidak Hadir">Tidak Hadir</option>
+                </select>
+            </div>
+
+            <div class="btn-container">
+                <button type="submit" id="submitBtn">Kirim</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="history-container">
+        <div class="history-title">Riwayat Ucapan & Doa</div>
+        <div class="history-list" id="historyList">
+            <div class="no-comment" id="noCommentText">Memuat ucapan...</div>
+        </div>
+    </div>
+
+    <script>
+        // TEMPELKAN URL SCRIPT WEB APP ANDA DI SINI
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyIgJUOlfs9ixvq1safxacY_zPhkG4qsgqftF0bJS0uXjFLZHyZsgHGrF9Np5y1XxFIOQ/exec';
+
+        const form = document.getElementById('rsvpForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const historyList = document.getElementById('historyList');
+
+        document.addEventListener("DOMContentLoaded", fetchComments);
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            submitBtn.innerText = "Mengirim...";
+            submitBtn.disabled = true;
+
+            const formData = new FormData(form);
+
+            fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    form.reset();
+                    alert("Terima kasih! Konfirmasi berhasil dikirim");
+                    fetchComments();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("Gagal mengirim konfirmasi.");
+                })
+                .finally(() => {
+                    submitBtn.innerText = "Kirim";
+                    submitBtn.disabled = false;
+                });
+        });
+
+        function fetchComments() {
+            fetch(SCRIPT_URL)
+                .then(response => response.json())
+                .then(data => {
+                    historyList.innerHTML = '';
+
+                    if (data.length === 0) {
+                        historyList.innerHTML = '<div class="no-comment" id="noCommentText">Belum ada ucapan. Jadilah yang pertama memberikan doa!</div>';
+                        return;
+                    }
+
+                    data.reverse().forEach(comment => {
+                        const statusClass = comment.kehadiran === 'Hadir' ? 'status-hadir' : 'status-tidak_hadir';
+                        const statusIcon = comment.kehadiran === 'Hadir' ? '✓ ' : '✕ ';
+
+                        const commentItem = document.createElement('div');
+                        commentItem.className = 'comment-item';
+                        commentItem.innerHTML = `
+                    <div class="comment-header">
+                        <span class="comment-name">${comment.nama}</span>
+                        <span class="comment-status ${statusClass}">${statusIcon}${comment.kehadiran}</span>
+                    </div>
+                    <p class="comment-text">${comment.ucapan}</p>
+                `;
+                        historyList.appendChild(commentItem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error saat memuat ucapan:', error);
+                    historyList.innerHTML = '<div class="no-comment">Gagal memuat ucapan terbaru.</div>';
+                });
+        }
+    </script>
+
+</body>
+
+</html>
